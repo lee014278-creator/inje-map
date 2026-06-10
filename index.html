@@ -10,7 +10,25 @@
     * { margin:0; padding:0; box-sizing:border-box; }
     body { font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; background:#f4f1eb; }
     .wrap { max-width:720px; margin:0 auto; }
-    #map { width:100%; height:440px; }
+
+    .selected-bar {
+      background:#1a1a1a;
+      color:#fff;
+      padding:13px 18px;
+      min-height:50px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      transition:background 0.4s ease;
+      font-size:15px;
+      font-weight:700;
+      letter-spacing:-0.3px;
+    }
+    .selected-bar .dot {
+      width:9px;height:9px;border-radius:50%;
+      background:rgba(255,255,255,0.5);flex-shrink:0;
+    }
+    #map { width:100%; height:400px; }
 
     .leaflet-tooltip.place-tooltip {
       background:rgba(255,255,255,0.97);
@@ -73,6 +91,7 @@
 </head>
 <body>
 <div class="wrap">
+  <div class="selected-bar" id="selectedBar"><div class="dot"></div><div id="selName">장소를 눌러 확인하세요</div></div>
   <div id="map"></div>
   <div class="spots" id="spotList"></div>
 </div>
@@ -165,9 +184,8 @@ spots.forEach((s, i) => {
     <div class="spot-top">
       <div class="num" style="background:${s.color}">${i+1}</div>
       <div class="info">
-        <div class="spot-name">${s.name}</div>
+        <div class="spot-name">${s.name} <span class="tag ${s.tagClass}">${s.tag}</span></div>
         <div class="spot-desc">${s.desc.replace(/\n/g,'<br>')}</div>
-        <span class="tag ${s.tagClass}">${s.tag}</span>
       </div>
     </div>
     <div class="spot-btns">
@@ -182,6 +200,10 @@ spots.forEach((s, i) => {
 });
 
 function selectSpot(idx) {
+  const s = spots[idx];
+  const bar = document.getElementById('selectedBar');
+  bar.style.background = s.color;
+  document.getElementById('selName').textContent = s.name;
   document.querySelectorAll('.spot').forEach(el => el.classList.remove('active','anim-in'));
   const card = document.getElementById('card-' + idx);
   card.classList.add('active','anim-in');
