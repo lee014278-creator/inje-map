@@ -108,8 +108,8 @@ const spots = [
 ];
 
 const map = L.map('map', { zoomControl:true, scrollWheelZoom:false });
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution:'© OpenStreetMap', maxZoom:17
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+  attribution:'© Esri © OpenStreetMap', maxZoom:19
 }).addTo(map);
 
 const latlngs = spots.map(s => [s.lat, s.lng]);
