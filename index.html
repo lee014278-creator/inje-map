@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>인제 자작나무숲 코스 지도</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; background:#f4f1eb; }
+    .wrap { max-width:720px; margin:0 auto; }
+    #map { width:100%; height:440px; }
+
+    .leaflet-tooltip.place-tooltip {
+      background:rgba(255,255,255,0.97);
+      border:none;
+      box-shadow:0 2px 10px rgba(0,0,0,0.18);
+      border-radius:24px;
+      padding:6px 14px 6px 8px;
+      font-size:17px;
+      font-weight:800;
+      color:#1a1a1a;
+      white-space:nowrap;
+      cursor:pointer;
+      pointer-events:all;
+    }
+    .leaflet-tooltip.place-tooltip::before { display:none; }
+
+    .spots { padding:14px 14px 28px; display:flex; flex-direction:column; gap:10px; }
+    .spot {
+      display:flex; flex-direction:column;
+      background:#fff; border-radius:14px;
+      box-shadow:0 1px 6px rgba(0,0,0,0.07);
+      cursor:pointer; border:2.5px solid transparent;
+      transition:box-shadow .25s, border-color .25s;
+      overflow:hidden;
+    }
+    .spot:hover { box-shadow:0 4px 16px rgba(0,0,0,0.11); }
+    .spot.active { border-color:var(--c); box-shadow:0 4px 18px rgba(0,0,0,0.13); }
+    .spot-top { display:flex; align-items:flex-start; gap:12px; padding:15px 16px 12px; }
+    .num {
+      width:30px; height:30px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:15px; font-weight:800; color:#fff; flex-shrink:0; margin-top:1px;
+    }
+    .spot-name { font-size:16px; font-weight:700; color:#1a1a1a; margin-bottom:4px; }
+    .spot-desc { font-size:13px; color:#888; line-height:1.65; }
+    .tag {
+      display:inline-block; font-size:12px;
+      padding:3px 9px; border-radius:20px; margin-top:7px; font-weight:700;
+    }
+    .tag-free { background:#e8f4eb; color:#2e7d32; }
+    .tag-res  { background:#fdecea; color:#c0392b; }
+    .spot-btns { display:none; gap:8px; padding:0 16px 14px; flex-wrap:wrap; }
+    .spot.active .spot-btns { display:flex; }
+    .btn {
+      display:inline-flex; align-items:center; gap:5px;
+      padding:8px 16px; border-radius:8px;
+      font-size:14px; font-weight:700;
+      text-decoration:none; border:none; transition:opacity .2s;
+    }
+    .btn:hover { opacity:.82; }
+    .btn-map  { background:#03c75a; color:#fff; }
+    .btn-home { background:#1a1a1a; color:#fff; }
+
+    @keyframes slideDown {
+      from { opacity:0; transform:translateY(-8px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .anim-in { animation:slideDown .3s ease forwards; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div id="map"></div>
+  <div class="spots" id="spotList"></div>
+</div>
+<script>
+const spots = [
+  {
+    lat:37.9883, lng:128.1991,
+    name:'원대리 자작나무숲', color:'#2e7d32',
+    tag:'입장 무료', tagClass:'tag-free',
+    desc:'입산마감 하절기 15:00 / 동절기 14:00\n3월 2일~4월 30일 입산통제 · 월·화 휴무',
+    mapUrl:'https://map.naver.com/p/search/원대리자작나무숲',
+    homeUrl:'https://www.forest.go.kr/kfsweb/kfi/kfs/cms/cmsView.do?cmsId=FC_001146&mn=AR02_02_06_02',
+    dir:'bottom', offset:[0,10]
+  },
+  {
+    lat:38.0041, lng:128.1706,
+    name:'동아실계곡', color:'#1565c0',
+    tag:'무료', tagClass:'tag-free',
+    desc:'숲 내려오는 길에 들르는 조용한 계곡\n작은 폭포 · 소(沼) · 주차 협소',
+    mapUrl:'https://map.naver.com/p/search/동아실계곡',
+    homeUrl:null,
+    dir:'top', offset:[0,-10]
+  },
+  {
+    lat:38.1922, lng:128.3264,
+    name:'심방터송어횟집', color:'#c0392b',
+    tag:'100% 예약제', tagClass:'tag-res',
+    desc:'033-462-5804 · 11:30~21:00 (화 휴무)\n송어회 1인분 25,000원',
+    mapUrl:'https://map.naver.com/p/search/심방터송어횟집',
+    homeUrl:null,
+    dir:'right', offset:[10,0]
+  }
+];
+
+const map = L.map('map', { zoomControl:true, scrollWheelZoom:false });
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution:'© OpenStreetMap', maxZoom:17
+}).addTo(map);
+
+const latlngs = spots.map(s => [s.lat, s.lng]);
+const poly = L.polyline(latlngs, { color:'#888', weight:2, dashArray:'6 5', opacity:0 }).addTo(map);
+map.fitBounds(latlngs, { padding:[65,65] });
+
+setTimeout(() => {
+  let op=0;
+  const t = setInterval(() => {
+    op+=0.05; poly.setStyle({ opacity:Math.min(op,0.4) });
+    if(op>=0.4) clearInterval(t);
+  }, 25);
+}, 500);
+
+// 마커 생성
+spots.forEach((s, i) => {
+  const icon = L.divIcon({
+    className:'',
+    html:`<div style="width:12px;height:12px;border-radius:50%;background:${s.color};box-shadow:0 2px 6px rgba(0,0,0,0.4);border:2px solid #fff;"></div>`,
+    iconSize:[12,12], iconAnchor:[6,6]
+  });
+
+  const marker = L.marker([s.lat,s.lng], { icon }).addTo(map);
+  const tipHtml = `<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:${s.color};color:#fff;font-size:15px;font-weight:800;margin-right:7px;">${i+1}</span>${s.name}`;
+
+  marker.bindTooltip(tipHtml, {
+    permanent:true, direction:s.dir, offset:s.offset, className:'place-tooltip'
+  });
+  marker.openTooltip();
+
+  // 툴팁 element에 클릭 이벤트 (지연 적용)
+  setTimeout(() => {
+    const el = marker.getTooltip()?.getElement();
+    if(el) el.addEventListener('click', () => selectSpot(i));
+  }, 300);
+
+  marker.on('click', () => selectSpot(i));
+});
+
+// 하단 카드 생성
+const list = document.getElementById('spotList');
+spots.forEach((s, i) => {
+  const div = document.createElement('div');
+  div.className = 'spot';
+  div.id = 'card-' + i;
+  div.style.setProperty('--c', s.color);
+  div.innerHTML = `
+    <div class="spot-top">
+      <div class="num" style="background:${s.color}">${i+1}</div>
+      <div class="info">
+        <div class="spot-name">${s.name}</div>
+        <div class="spot-desc">${s.desc.replace(/\n/g,'<br>')}</div>
+        <span class="tag ${s.tagClass}">${s.tag}</span>
+      </div>
+    </div>
+    <div class="spot-btns">
+      <a class="btn btn-map" href="${s.mapUrl}" target="_blank">🗺 네이버 지도</a>
+      ${s.homeUrl?`<a class="btn btn-home" href="${s.homeUrl}" target="_blank">🌐 공식 홈페이지</a>`:''}
+    </div>`;
+  div.addEventListener('click', e => {
+    if(e.target.closest('.btn')) return;
+    selectSpot(i);
+  });
+  list.appendChild(div);
+});
+
+function selectSpot(idx) {
+  document.querySelectorAll('.spot').forEach(el => el.classList.remove('active','anim-in'));
+  const card = document.getElementById('card-' + idx);
+  card.classList.add('active','anim-in');
+  list.prepend(card);
+}
+</script>
+</body>
+</html>
