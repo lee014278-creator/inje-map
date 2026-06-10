@@ -108,13 +108,18 @@ const spots = [
 ];
 
 const map = L.map('map', { zoomControl:true, scrollWheelZoom:false });
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-  attribution:'© CartoDB © OpenStreetMap', maxZoom:19
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution:'© OpenStreetMap contributors', maxZoom:19
 }).addTo(map);
 
 const latlngs = spots.map(s => [s.lat, s.lng]);
 const poly = L.polyline(latlngs, { color:'#888', weight:2, dashArray:'6 5', opacity:0 }).addTo(map);
 map.fitBounds(latlngs, { padding:[65,65] });
+
+setTimeout(() => {
+  map.invalidateSize();
+  map.fitBounds(latlngs, { padding:[65,65] });
+}, 500);
 
 setTimeout(() => {
   let op=0;
