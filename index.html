@@ -126,7 +126,7 @@ const spots = [
   }
 ];
 
-const map = L.map('map', { zoomControl:true, scrollWheelZoom:false });
+const map = L.map('map', { zoomControl:false, scrollWheelZoom:false, dragging:false, touchZoom:false, doubleClickZoom:false, boxZoom:false, keyboard:false });
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution:'© OpenStreetMap contributors', maxZoom:19
 }).addTo(map);
