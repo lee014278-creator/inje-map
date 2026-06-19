@@ -131,16 +131,16 @@
       box-shadow:0 4px 12px rgba(74,54,35,.12);
     }
 
-    .marker-wrap {
+    .marker-shell {
       position:relative;
-      width:1px;
-      height:1px;
+      width:170px;
+      height:64px;
     }
 
     .pin {
       position:absolute;
-      left:-14px;
-      top:-14px;
+      left:71px;
+      top:18px;
       width:28px;
       height:28px;
       border-radius:999px;
@@ -153,16 +153,16 @@
       font-weight:900;
       border:3px solid #fff;
       box-shadow:0 4px 12px rgba(64,41,22,.25);
-      z-index:2;
+      z-index:3;
     }
 
     .label {
       position:absolute;
       min-height:23px;
-      max-width:160px;
+      max-width:150px;
       padding:4px 7px;
       border-radius:999px;
-      background:rgba(255,250,242,.97);
+      background:rgba(255,250,242,.98);
       border:1px solid #e3d0b7;
       color:var(--dark);
       font-size:11px;
@@ -170,29 +170,29 @@
       line-height:1.15;
       white-space:nowrap;
       box-shadow:0 4px 12px rgba(64,41,22,.14);
-      z-index:1;
+      z-index:2;
     }
 
-    .marker-wrap.selected .pin {
+    .marker-shell.selected .pin {
       width:32px;
       height:32px;
-      left:-16px;
-      top:-16px;
+      left:69px;
+      top:16px;
       background:var(--dark);
       font-size:14px;
     }
 
-    .marker-wrap.selected .label {
+    .marker-shell.selected .label {
       background:#fff;
       border-color:var(--point);
     }
 
     /* 실제 좌표 마커 기준 라벨 위치 */
-    .m1 .label { right:20px; top:-12px; }       /* 송도해수욕장: 왼쪽 */
-    .m2 .label { left:20px; bottom:19px; }      /* 구름산책로: 오른쪽 위 */
-    .m3 .label { right:20px; top:18px; }        /* 암남공원: 왼쪽 아래 */
-    .m4 .label { left:20px; bottom:19px; }      /* 용궁구름다리: 오른쪽 위 */
-    .m5 .label { left:20px; top:18px; }         /* 해상케이블카: 오른쪽 아래 */
+    .m1 .label { right:96px; top:20px; }       /* 1 송도해수욕장: 왼쪽 */
+    .m2 .label { right:96px; top:-2px; }         /* 2 구름산책로: 오른쪽 위 */
+    .m3 .label { right:96px; top:20px; }       /* 3 암남공원: 왼쪽 아래 */
+    .m4 .label { left:96px; top:36px; }         /* 4 용궁구름다리: 오른쪽 위 */
+    .m5 .label { left:96px; top:36px; }        /* 5 해상케이블카: 오른쪽 아래 */
 
     .cards {
       margin-top:7px;
@@ -319,14 +319,32 @@
         font-size:13px;
       }
 
+      .marker-shell {
+        width:170px;
+        height:70px;
+      }
+
+      .pin {
+        left:71px;
+        top:21px;
+      }
+
+      .marker-shell.selected .pin {
+        left:69px;
+        top:19px;
+      }
+
       .label {
-        max-width:132px;
+        max-width:130px;
         font-size:10px;
         padding:4px 6px;
       }
 
-      .m2 .label { left:18px; bottom:18px; }
-      .m5 .label { left:18px; top:18px; }
+      .m1 .label { right:98px; top:24px; }
+      .m2 .label { right:98px; top:2px; }
+      .m3 .label { right:98px; top:20px; }
+      .m4 .label { left:98px; top:38px; }
+      .m5 .label { left:98px; top:42px; }
 
       .list {
         grid-template-columns:1fr;
@@ -382,6 +400,8 @@
         short:"송도해수욕장",
         lat:35.0755,
         lng:129.0168,
+        displayLat:35.0755,
+        displayLng:129.0149,
         desc:"1913년 개장한 국내 첫 공설 해수욕장입니다.",
         cats:["beach"],
         naverUrl:"https://map.naver.com/p/search/송도해수욕장",
@@ -395,6 +415,8 @@
         short:"송도구름산책로",
         lat:35.0759,
         lng:129.0216,
+        displayLat:35.0786,
+        displayLng:129.0190,
         desc:"거북섬을 잇는 해상 산책로로 바다 전망을 즐기기 좋습니다.",
         cats:["beach","view"],
         naverUrl:"https://map.naver.com/p/search/송도구름산책로",
@@ -408,6 +430,8 @@
         short:"암남공원",
         lat:35.0616,
         lng:129.0205,
+        displayLat:35.0609,
+        displayLng:129.0186,
         desc:"해안 산책로와 전망을 함께 즐길 수 있는 공원입니다.",
         cats:["park","view"],
         naverUrl:"https://map.naver.com/p/search/암남공원",
@@ -421,6 +445,8 @@
         short:"용궁구름다리",
         lat:35.0619,
         lng:129.0222,
+        displayLat:35.0626,
+        displayLng:129.0239,
         desc:"바다 위로 이어지는 송도 대표 해상 구름다리입니다.",
         cats:["park","view"],
         naverUrl:"https://map.naver.com/p/search/송도용궁구름다리",
@@ -434,6 +460,8 @@
         short:"송도해상케이블카",
         lat:35.0764,
         lng:129.0236,
+        displayLat:35.0764,
+        displayLng:129.0261,
         desc:"송도해수욕장과 암남공원 스카이파크를 잇는 케이블카입니다.",
         cats:["beach","view"],
         naverUrl:"https://map.naver.com/p/search/송도해상케이블카",
@@ -469,13 +497,13 @@
       return L.divIcon({
         className:"",
         html:`
-          <div class="marker-wrap ${place.markerClass}${selected}">
+          <div class="marker-shell ${place.markerClass}${selected}">
             <div class="pin">${place.no}</div>
             <div class="label">${place.short}</div>
           </div>
         `,
-        iconSize:[1,1],
-        iconAnchor:[0,0]
+        iconSize:[170,64],
+        iconAnchor:[85,32]
       });
     }
 
@@ -500,7 +528,7 @@
       markerLayer.clearLayers();
 
       visiblePlaces().forEach(place => {
-        const marker = L.marker([place.lat, place.lng], {
+        const marker = L.marker([place.displayLat || place.lat, place.displayLng || place.lng], {
           icon: markerIcon(place),
           keyboard:false
         });
@@ -547,13 +575,13 @@
       if (!map) return;
 
       if (currentFilter === "beach") {
-        map.setView([35.0758, 129.0204], 16, { animate:false });
+        map.setView([35.0758, 129.0208], 13, { animate:false });
       } else if (currentFilter === "park") {
-        map.setView([35.0618, 129.0214], 16, { animate:false });
+        map.setView([35.0618, 129.0214], 13, { animate:false });
       } else if (currentFilter === "view") {
-        map.setView([35.0692, 129.0220], 15, { animate:false });
+        map.setView([35.0692, 129.0213], 13, { animate:false });
       } else {
-        map.setView([35.0689, 129.0205], 15, { animate:false });
+        map.setView([35.0689, 129.0208], 13, { animate:false });
       }
 
       setTimeout(() => map.invalidateSize(false), 100);
