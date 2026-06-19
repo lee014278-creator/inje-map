@@ -2,65 +2,197 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <title>인제 자작나무숲 코스 지도</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <style>
+    :root {
+      --bg:#f4f1eb;
+      --card:#ffffff;
+      --text:#1a1a1a;
+      --muted:#777;
+      --line:#e5ded2;
+      --green:#2e7d32;
+      --blue:#1565c0;
+      --red:#c0392b;
+      --map-h:410px;
+    }
+
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; background:#f4f1eb; }
-    .wrap { max-width:720px; margin:0 auto; }
-    #map { width:100%; height:440px; }
-    .leaflet-container { cursor:default !important; }
+
+    html, body {
+      width:100%;
+      height:100%;
+      overflow:hidden;
+      font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    .wrap {
+      width:100%;
+      max-width:720px;
+      height:100vh;
+      margin:0 auto;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      background:var(--bg);
+    }
+
+    #map {
+      width:100%;
+      height:var(--map-h);
+      min-height:var(--map-h);
+      flex:0 0 var(--map-h);
+      background:#d8e8cf;
+    }
+
+    .leaflet-container {
+      cursor:default !important;
+      font-family:inherit;
+    }
+
+    .leaflet-control-attribution {
+      font-size:10px;
+    }
 
     .leaflet-tooltip.place-tooltip {
-      background:rgba(255,255,255,0.97);
+      background:rgba(255,255,255,0.98);
       border:none;
-      box-shadow:0 2px 10px rgba(0,0,0,0.18);
+      box-shadow:0 2px 10px rgba(0,0,0,0.2);
       border-radius:24px;
       padding:6px 14px 6px 8px;
-      font-size:17px;
+      font-size:15px;
       font-weight:800;
       color:#1a1a1a;
       white-space:nowrap;
       cursor:pointer;
       pointer-events:all;
     }
-    .leaflet-tooltip.place-tooltip::before { display:none; }
 
-    .spots { padding:14px 14px 28px; display:flex; flex-direction:column; gap:10px; }
+    .leaflet-tooltip.place-tooltip::before {
+      display:none;
+    }
+
+    .tip-num {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:28px;
+      height:28px;
+      border-radius:50%;
+      color:#fff;
+      font-size:15px;
+      font-weight:800;
+      margin-right:7px;
+      vertical-align:middle;
+    }
+
+    .spots {
+      flex:1 1 auto;
+      min-height:0;
+      overflow-y:auto;
+      -webkit-overflow-scrolling:touch;
+      padding:14px 14px 28px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
     .spot {
-      display:flex; flex-direction:column;
-      background:#fff; border-radius:14px;
+      display:flex;
+      flex-direction:column;
+      background:var(--card);
+      border-radius:14px;
       box-shadow:0 1px 6px rgba(0,0,0,0.07);
-      cursor:pointer; border:2.5px solid transparent;
+      cursor:pointer;
+      border:2.5px solid transparent;
       transition:box-shadow .25s, border-color .25s;
       overflow:hidden;
+      flex:0 0 auto;
     }
-    .spot:hover { box-shadow:0 4px 16px rgba(0,0,0,0.11); }
-    .spot.active { border-color:var(--c); box-shadow:0 4px 18px rgba(0,0,0,0.13); }
-    .spot-top { display:flex; align-items:flex-start; gap:12px; padding:15px 16px 12px; }
+
+    .spot:hover {
+      box-shadow:0 4px 16px rgba(0,0,0,0.11);
+    }
+
+    .spot.active {
+      border-color:var(--c);
+      box-shadow:0 4px 18px rgba(0,0,0,0.13);
+      order:-1;
+    }
+
+    .spot-top {
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      padding:15px 16px 12px;
+    }
+
     .num {
-      width:30px; height:30px; border-radius:50%;
-      display:flex; align-items:center; justify-content:center;
-      font-size:15px; font-weight:800; color:#fff; flex-shrink:0; margin-top:1px;
+      width:30px;
+      height:30px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:15px;
+      font-weight:800;
+      color:#fff;
+      flex-shrink:0;
+      margin-top:1px;
     }
-    .spot-name { font-size:16px; font-weight:700; color:#1a1a1a; margin-bottom:4px; }
-    .spot-desc { font-size:13px; color:#888; line-height:1.65; }
+
+    .spot-name {
+      font-size:16px;
+      font-weight:700;
+      color:#1a1a1a;
+      margin-bottom:4px;
+    }
+
+    .spot-desc {
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.65;
+    }
+
     .tag {
-      display:inline-block; font-size:12px;
-      padding:3px 9px; border-radius:20px; margin-top:7px; font-weight:700;
+      display:inline-block;
+      font-size:12px;
+      padding:3px 9px;
+      border-radius:20px;
+      margin-top:7px;
+      font-weight:700;
     }
+
     .tag-free { background:#e8f4eb; color:#2e7d32; }
     .tag-res  { background:#fdecea; color:#c0392b; }
-    .spot-btns { display:none; gap:8px; padding:0 16px 14px; flex-wrap:wrap; }
-    .spot.active .spot-btns { display:flex; }
-    .btn {
-      display:inline-flex; align-items:center; gap:5px;
-      padding:8px 16px; border-radius:8px;
-      font-size:14px; font-weight:700;
-      text-decoration:none; border:none; transition:opacity .2s;
+
+    .spot-btns {
+      display:none;
+      gap:8px;
+      padding:0 16px 14px;
+      flex-wrap:wrap;
     }
+
+    .spot.active .spot-btns {
+      display:flex;
+    }
+
+    .btn {
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+      padding:8px 16px;
+      border-radius:8px;
+      font-size:14px;
+      font-weight:700;
+      text-decoration:none;
+      border:none;
+      transition:opacity .2s;
+    }
+
     .btn:hover { opacity:.82; }
     .btn-map  { background:#03c75a; color:#fff; }
     .btn-home { background:#1a1a1a; color:#fff; }
@@ -69,14 +201,48 @@
       from { opacity:0; transform:translateY(-8px); }
       to   { opacity:1; transform:translateY(0); }
     }
-    .anim-in { animation:slideDown .3s ease forwards; }
+
+    .anim-in {
+      animation:slideDown .25s ease forwards;
+    }
+
+    @media (max-width:720px) {
+      :root { --map-h:390px; }
+
+      .leaflet-tooltip.place-tooltip {
+        font-size:13px;
+        padding:5px 11px 5px 7px;
+      }
+
+      .tip-num {
+        width:25px;
+        height:25px;
+        font-size:13px;
+        margin-right:5px;
+      }
+
+      .spots {
+        padding:12px 12px 24px;
+      }
+
+      .spot-top {
+        padding:13px 14px 10px;
+      }
+    }
+
+    @media (max-height:620px) {
+      :root { --map-h:340px; }
+    }
   </style>
 </head>
+
 <body>
 <div class="wrap">
   <div id="map"></div>
   <div class="spots" id="spotList"></div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 const spots = [
   {
@@ -86,7 +252,7 @@ const spots = [
     desc:'입산마감 하절기 15:00 / 동절기 14:00\n3월 2일~4월 30일 입산통제 · 월·화 휴무',
     mapUrl:'https://map.naver.com/p/search/원대리자작나무숲',
     homeUrl:'https://www.forest.go.kr/kfsweb/kfi/kfs/cms/cmsView.do?cmsId=FC_001146&mn=AR02_02_06_02',
-    dir:'bottom', offset:[0,10]
+    dir:'bottom', offset:[0,14]
   },
   {
     lat:38.0041, lng:128.1706,
@@ -95,7 +261,7 @@ const spots = [
     desc:'숲 내려오는 길에 들르는 조용한 계곡\n작은 폭포 · 소(沼) · 주차 협소',
     mapUrl:'https://map.naver.com/p/search/동아실계곡',
     homeUrl:null,
-    dir:'top', offset:[0,-10]
+    dir:'top', offset:[0,-14]
   },
   {
     lat:38.1922, lng:128.3264,
@@ -104,9 +270,11 @@ const spots = [
     desc:'033-462-5804 · 11:30~21:00 (화 휴무)\n송어회 1인분 25,000원',
     mapUrl:'https://map.naver.com/p/search/심방터송어횟집',
     homeUrl:null,
-    dir:'right', offset:[10,0]
+    dir:'left', offset:[-14,0]
   }
 ];
+
+let selectedIndex = 0;
 
 const map = L.map('map', {
   zoomControl:false,
@@ -117,13 +285,22 @@ const map = L.map('map', {
   boxZoom:false,
   keyboard:false
 });
+
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution:'© OpenStreetMap', maxZoom:17
+  attribution:'© OpenStreetMap',
+  maxZoom:17
 }).addTo(map);
 
 const latlngs = spots.map(s => [s.lat, s.lng]);
-const poly = L.polyline(latlngs, { color:'#888', weight:2, dashArray:'6 5', opacity:0 }).addTo(map);
-map.fitBounds(latlngs, { padding:[65,65] });
+const bounds = L.latLngBounds(latlngs);
+
+const poly = L.polyline(latlngs, {
+  color:'#777',
+  weight:2,
+  dashArray:'6 5',
+  opacity:0.38,
+  interactive:false
+}).addTo(map);
 
 function lockMap() {
   map.dragging.disable();
@@ -132,42 +309,62 @@ function lockMap() {
   map.touchZoom.disable();
   map.boxZoom.disable();
   map.keyboard.disable();
+
+  const el = map.getContainer();
+  el.addEventListener('wheel', e => e.preventDefault(), { passive:false });
+  el.addEventListener('dblclick', e => e.preventDefault());
+  el.addEventListener('touchmove', e => e.preventDefault(), { passive:false });
 }
 
-lockMap();
+function fitMap() {
+  map.fitBounds(bounds, {
+    paddingTopLeft:[72,72],
+    paddingBottomRight:[72,72],
+    animate:false,
+    maxZoom:11
+  });
+  setTimeout(() => map.invalidateSize(false), 80);
+  setTimeout(() => map.fitBounds(bounds, {
+    paddingTopLeft:[72,72],
+    paddingBottomRight:[72,72],
+    animate:false,
+    maxZoom:11
+  }), 160);
+}
 
-setTimeout(() => {
-  let op=0;
-  const t = setInterval(() => {
-    op+=0.05; poly.setStyle({ opacity:Math.min(op,0.4) });
-    if(op>=0.4) clearInterval(t);
-  }, 25);
-}, 500);
+const markers = [];
 
 spots.forEach((s, i) => {
   const icon = L.divIcon({
     className:'',
-    html:`<div style="width:12px;height:12px;border-radius:50%;background:${s.color};box-shadow:0 2px 6px rgba(0,0,0,0.4);border:2px solid #fff;"></div>`,
-    iconSize:[12,12], iconAnchor:[6,6]
+    html:`<div style="width:14px;height:14px;border-radius:50%;background:${s.color};box-shadow:0 2px 6px rgba(0,0,0,0.4);border:2px solid #fff;"></div>`,
+    iconSize:[14,14],
+    iconAnchor:[7,7]
   });
 
-  const marker = L.marker([s.lat,s.lng], { icon }).addTo(map);
-  const tipHtml = `<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:${s.color};color:#fff;font-size:15px;font-weight:800;margin-right:7px;">${i+1}</span>${s.name}`;
+  const marker = L.marker([s.lat,s.lng], { icon, keyboard:false }).addTo(map);
+  markers.push(marker);
+
+  const tipHtml = `<span class="tip-num" style="background:${s.color};">${i+1}</span>${s.name}`;
 
   marker.bindTooltip(tipHtml, {
-    permanent:true, direction:s.dir, offset:s.offset, className:'place-tooltip'
+    permanent:true,
+    direction:s.dir,
+    offset:s.offset,
+    className:'place-tooltip'
   });
+
   marker.openTooltip();
+  marker.on('click', () => selectSpot(i));
 
   setTimeout(() => {
     const el = marker.getTooltip()?.getElement();
-    if(el) el.addEventListener('click', () => selectSpot(i));
+    if (el) el.addEventListener('click', () => selectSpot(i));
   }, 300);
-
-  marker.on('click', () => selectSpot(i));
 });
 
 const list = document.getElementById('spotList');
+
 spots.forEach((s, i) => {
   const div = document.createElement('div');
   div.className = 'spot';
@@ -183,22 +380,40 @@ spots.forEach((s, i) => {
       </div>
     </div>
     <div class="spot-btns">
-      <a class="btn btn-map" href="${s.mapUrl}" target="_blank">🗺 네이버 지도</a>
-      ${s.homeUrl?`<a class="btn btn-home" href="${s.homeUrl}" target="_blank">🌐 공식 홈페이지</a>`:''}
+      <a class="btn btn-map" href="${s.mapUrl}" target="_blank" rel="noopener">🗺 네이버 지도</a>
+      ${s.homeUrl ? `<a class="btn btn-home" href="${s.homeUrl}" target="_blank" rel="noopener">🌐 공식 홈페이지</a>` : ''}
     </div>`;
+
   div.addEventListener('click', e => {
-    if(e.target.closest('.btn')) return;
+    if (e.target.closest('.btn')) return;
     selectSpot(i);
   });
+
   list.appendChild(div);
 });
 
 function selectSpot(idx) {
+  selectedIndex = idx;
+
   document.querySelectorAll('.spot').forEach(el => el.classList.remove('active','anim-in'));
+
   const card = document.getElementById('card-' + idx);
-  card.classList.add('active','anim-in');
-  list.prepend(card);
+  if (card) {
+    card.classList.add('active','anim-in');
+    list.prepend(card);
+    list.scrollTo({ top:0, behavior:'smooth' });
+  }
 }
+
+lockMap();
+fitMap();
+selectSpot(0);
+
+window.addEventListener('resize', fitMap);
+window.addEventListener('load', () => {
+  setTimeout(fitMap, 120);
+  setTimeout(fitMap, 500);
+});
 </script>
 </body>
 </html>
